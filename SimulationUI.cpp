@@ -30,7 +30,7 @@ SimulationUI::SimulationUI(int width, int height) {
     editModeN = false;
     bounds = simulationRun->isBoundsEnabled();
 
-    InitWindow(screenWidth, screenHeight, "Symulacja Skory - Pro");
+    InitWindow(screenWidth, screenHeight, "LISZAJ SYMULACJA - Kornel Pustelak - 179599");
     SetTargetFPS(60);
 }
 

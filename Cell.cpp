@@ -21,7 +21,7 @@ void Cell::swapNextStateToCurrent() {
 }
 
 void Cell::setNextState(const CellState newNextState) {
-    if (nextState == UNDEFINED) {
+    if (nextState == EMPTY) {
         nextState = newNextState;
     } else {
         throw std::logic_error("Cell already has a next state assigned for this tick.");
@@ -29,9 +29,9 @@ void Cell::setNextState(const CellState newNextState) {
 }
 
 bool Cell::haveNextState() const {
-    return nextState != UNDEFINED;
+    return nextState != EMPTY;
 }
 
 void Cell::cleanNextState() {
-    nextState = UNDEFINED;
+    nextState = EMPTY;
 }

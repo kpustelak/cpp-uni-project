@@ -5,8 +5,7 @@
 #ifndef UNTITLED_CELL_H
 #define UNTITLED_CELL_H
 
-//Undefined = empty
-enum CellState {UNDEFINED ,HEALTHY, IMMUNE, INFECTED};
+enum CellState {EMPTY ,HEALTHY, IMMUNE, INFECTED};
 
 class Cell {
 private:
@@ -14,7 +13,7 @@ private:
     CellState currentState;
     CellState nextState;
 public:
-    Cell(): x(0), y(0), currentState(HEALTHY), nextState(UNDEFINED) {}
+    Cell(): x(0), y(0), currentState(HEALTHY), nextState(EMPTY) {}
 
     void setPos(int newX, int newY);
     [[nodiscard]] int getX()const ;
