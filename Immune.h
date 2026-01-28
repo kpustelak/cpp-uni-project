@@ -9,7 +9,7 @@
 
 class SkinProblem;
 class Cell;
-
+/*Klasa służy jedynie odróżnieniu infected od immunie i stworzeniu */
 class Immune: public SkinProblem {
 public:
     Immune(Cell* cell, int infectionTime): SkinProblem(cell, infectionTime){}

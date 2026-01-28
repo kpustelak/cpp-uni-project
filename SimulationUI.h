@@ -33,6 +33,11 @@ private:
     bool editModeN;
     bool bounds;
 
+    // NOWE - tryb natychmiastowej zmiany czasu
+    bool instantTimeChange;
+    int pendingInfTime;  // Wartość oczekująca na zastosowanie
+    int pendingImmTime;  // Wartość oczekująca na zastosowanie
+
     void Update();
     void Draw();
     void DrawSidebar();

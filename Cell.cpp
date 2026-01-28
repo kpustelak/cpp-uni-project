@@ -1,31 +1,31 @@
 #include "Cell.h"
-#include <stdexcept>
 
-void Cell::setPos(const int newX,const int newY) {
+void Cell::setPos(int newX, int newY) {
     x = newX;
     y = newY;
 }
 
-int Cell::getX() const { return x; }
-int Cell::getY() const { return y; }
+int Cell::getX() const {
+    return x;
+}
+
+int Cell::getY() const {
+    return y;
+}
 
 CellState Cell::getCurrentState() const {
     return currentState;
 }
 
 void Cell::swapNextStateToCurrent() {
-    if (haveNextState()) {
+    if(nextState != EMPTY) {
         currentState = nextState;
-        cleanNextState();
+        nextState = EMPTY;
     }
 }
 
-void Cell::setNextState(const CellState newNextState) {
-    if (nextState == EMPTY) {
-        nextState = newNextState;
-    } else {
-        throw std::logic_error("Cell already has a next state assigned for this tick.");
-    }
+void Cell::setNextState(CellState newNextState) {
+    nextState = newNextState;
 }
 
 bool Cell::haveNextState() const {

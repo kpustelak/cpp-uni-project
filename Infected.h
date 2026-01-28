@@ -12,8 +12,10 @@
 
 class Infected : public SkinProblem {
 public:
+
     Infected(Cell* cell, int infectionTime): SkinProblem(cell, infectionTime){}
 
+    /*Zarażenie komórek wokoł*/
     void applyEffect(Board &board) override;
 };
 

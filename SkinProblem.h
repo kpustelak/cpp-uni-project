@@ -25,6 +25,9 @@ public:
     bool tick();
 
     virtual void applyEffect(Board &board) =0;
+
+    void setTime(int newTime);
+    int getTime() const;
 };
 
 

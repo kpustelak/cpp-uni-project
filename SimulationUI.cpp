@@ -30,6 +30,10 @@ SimulationUI::SimulationUI(int width, int height) {
     editModeN = false;
     bounds = simulationRun->isBoundsEnabled();
 
+    instantTimeChange = true;
+    pendingInfTime = guiInfTime;
+    pendingImmTime = guiImmTime;
+
     InitWindow(screenWidth, screenHeight, "LISZAJ SYMULACJA - Kornel Pustelak - 179599");
     SetTargetFPS(60);
 }
@@ -38,12 +42,46 @@ SimulationUI::~SimulationUI() {
     delete simulationRun;
     CloseWindow();
 }
-
+/*Inny sposób implementacji kolorów*/
 Color SimulationUI::GetCellColor(Cell* cell) {
     CellState state = cell->getCurrentState();
-    if (state == INFECTED) return colInfected;
-    if (state == IMMUNE) return colImmune;
+
     if (state == HEALTHY) return colHealthy;
+
+    int row = cell->getX();
+    int col = cell->getY();
+    auto [isInfected, isImmune, remainingTime, maxTime] = simulationRun->getCellProblemInfo(row, col);
+
+    if (isInfected) {
+        if (maxTime > 0) {
+            float progress = 1.0f - ((float)remainingTime / (float)maxTime);
+
+            Color result;
+            result.r = (unsigned char)(colInfected.r * (1.0f - progress) + colImmune.r * progress);
+            result.g = (unsigned char)(colInfected.g * (1.0f - progress) + colImmune.g * progress);
+            result.b = (unsigned char)(colInfected.b * (1.0f - progress) + colImmune.b * progress);
+            result.a = 255;
+
+            return result;
+        }
+        return colInfected;
+    }
+
+    if (isImmune) {
+        if (maxTime > 0) {
+            float progress = 1.0f - ((float)remainingTime / (float)maxTime);
+
+            Color result;
+            result.r = (unsigned char)(colImmune.r * (1.0f - progress) + colHealthy.r * progress);
+            result.g = (unsigned char)(colImmune.g * (1.0f - progress) + colHealthy.g * progress);
+            result.b = (unsigned char)(colImmune.b * (1.0f - progress) + colHealthy.b * progress);
+            result.a = 255;
+
+            return result;
+        }
+        return colImmune;
+    }
+
     return BLACK;
 }
 
@@ -92,16 +130,20 @@ void SimulationUI::DrawSidebar() {
     if (GuiButton({ sX, curY, sW, 40 }, paused ? "#131# START" : "#132# PAUZA")) paused = !paused;
     curY += 50;
 
-    GuiLabel({ sX, curY, sW, 20 }, "Wymiary siatki (max 50):");
-    if (GuiValueBox({ sX, curY + 20, 80, 30 }, NULL, &guiN, 5, 50, editModeN)) editModeN = !editModeN;
-    if (GuiButton({ sX + 90, curY + 20, sW - 90, 30 }, "ZASTOSUJ")) {
-        currentN = guiN;
-        delete simulationRun;
-        simulationRun = new Run(currentN, currentN);
-        simulationRun->setInfectionTime(guiInfTime);
-        simulationRun->setImmunityTime(guiImmTime);
-        simulationRun->setBoardBounds(bounds);
+    if (GuiButton({ sX, curY, sW, 40 }, "#143# RESET SYMULACJI")) {
+        simulationRun->resetBoard();
         paused = true;
+    }
+    curY += 50;
+
+    GuiLabel({ sX, curY, sW, 20 }, "Wymiary siatki (max 500):");
+    if (GuiValueBox({ sX, curY + 20, 80, 30 }, NULL, &guiN, 5, 500, editModeN)) editModeN = !editModeN;
+
+    if (GuiButton({ sX + 90, curY + 20, sW - 90, 30 }, "ZASTOSUJ")) {
+        if (guiN != currentN) {
+            currentN = guiN;
+            simulationRun->resizeBoard(currentN, currentN);
+        }
     }
     curY += 65;
 
@@ -122,13 +164,52 @@ void SimulationUI::DrawSidebar() {
     GuiSliderBar({ sX, curY + 20, sW, 20 }, NULL, NULL, &updateInterval, 0.01f, 1.0f);
     curY += 55;
 
+    if (GuiCheckBox({ sX, curY, 20, 20 }, "Zmiany czasu natychmiastowe", &instantTimeChange)) {
+        if (instantTimeChange) {
+            simulationRun->setInfectionTime(guiInfTime);
+            simulationRun->setImmunityTime(guiImmTime);
+            pendingInfTime = guiInfTime;
+            pendingImmTime = guiImmTime;
+        }
+    }
+    curY += 35;
+
     GuiLabel({ sX, curY, sW, 20 }, "Czas trwania infekcji:");
-    if (GuiSpinner({ sX, curY + 20, sW, 30 }, NULL, &guiInfTime, 1, 100, false)) simulationRun->setInfectionTime(guiInfTime);
+    int previousInfTime = guiInfTime;
+    GuiSpinner({ sX, curY + 20, sW, 30 }, NULL, &guiInfTime, 1, 100, false);
+    if (guiInfTime != previousInfTime) {
+        pendingInfTime = guiInfTime;
+        if (instantTimeChange) {
+            simulationRun->setInfectionTime(guiInfTime);
+        }
+    }
     curY += 60;
 
     GuiLabel({ sX, curY, sW, 20 }, "Czas odpornosci:");
-    if (GuiSpinner({ sX, curY + 20, sW, 30 }, NULL, &guiImmTime, 1, 100, false)) simulationRun->setImmunityTime(guiImmTime);
+    int previousImmTime = guiImmTime;
+    GuiSpinner({ sX, curY + 20, sW, 30 }, NULL, &guiImmTime, 1, 100, false);
+    if (guiImmTime != previousImmTime) {
+        pendingImmTime = guiImmTime;
+        if (instantTimeChange) {
+            simulationRun->setImmunityTime(guiImmTime);
+        }
+    }
     curY += 60;
+
+    if (!instantTimeChange) {
+        bool timesChanged = (pendingInfTime != simulationRun->getInfectionTime() ||
+                           pendingImmTime != simulationRun->getImmunityTime());
+
+        GuiSetState(timesChanged ? STATE_NORMAL : STATE_DISABLED);
+        if (GuiButton({ sX, curY, sW, 35 }, "ZASTOSUJ CZASY")) {
+            if (timesChanged) {
+                simulationRun->setInfectionTime(pendingInfTime);
+                simulationRun->setImmunityTime(pendingImmTime);
+            }
+        }
+        GuiSetState(STATE_NORMAL);
+        curY += 45;
+    }
 
     if (GuiCheckBox({ sX, curY, 20, 20 }, "Zamkniete granice", &bounds)) simulationRun->setBoardBounds(bounds);
 }

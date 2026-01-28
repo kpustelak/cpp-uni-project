@@ -18,10 +18,14 @@ public:
     bool isBoundsEnabled() const;
 
     Cell* getCell(int row, int col);
+    const Cell* getCell(int row, int col) const;
     std::vector<Cell *> getCellsAround(int row, int col);
 
     int getRows();
     int getCols();
+
+    // Zmiana rozmiaru bez resetowania
+    void resize(int newRows, int newCols);
 };
 
 #endif //UNTITLED_BOARD_H

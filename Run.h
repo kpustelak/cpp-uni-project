@@ -2,6 +2,8 @@
 #define UNTITLED_RUN_H
 
 #include <vector>
+#include <tuple>
+#include <map>
 #include "Board.h"
 
 class SkinProblem;
@@ -13,6 +15,9 @@ private:
 
     int settingsInfectionTime;
     int settingsImmunityTime;
+
+    void rebuildCellProblemMap();
+    std::map<Cell*, SkinProblem*> cellToProblemMap;
 
 public:
     Run(int rows, int cols);
@@ -30,6 +35,16 @@ public:
 
     void setBoardBounds(bool enabled);
     [[nodiscard]]bool isBoundsEnabled() const;
+
+    // NOWE METODY
+    void resizeBoard(int newRows, int newCols);
+    void updateExistingInfectionTimes();
+    void updateExistingImmunityTimes();
+    void resetBoard(); // RESET - wyczyść całą symulację
+
+    // NOWA METODA - pobierz informacje o komórce dla gradientu
+    // Zwraca: {isInfected, isImmune, remainingTime, maxTime}
+    std::tuple<bool, bool, int, int> getCellProblemInfo(int row, int col) const;
 };
 
 #endif //UNTITLED_RUN_H
